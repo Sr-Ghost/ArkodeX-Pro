@@ -1,0 +1,3576 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Arkodex Pro - Estrutura e Funcionalidades</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1e40af;
+            --secondary: #06b6d4;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --bg-primary: linear-gradient(135deg, #0f172a, #1e293b);
+            --text-primary: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            scroll-behavior: smooth;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Layout Principal */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            pointer-events: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-title h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 3s ease infinite;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(10deg); }
+        }
+
+        .sidebar-subtitle {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        /* Navigation */
+        .nav-section {
+            padding: 1rem 0;
+        }
+
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--glass);
+            color: #f1f5f9;
+            border-left-color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-closed {
+            margin-left: 0;
+        }
+
+        /* Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-description {
+            color: #94a3b8;
+            font-size: 1.125rem;
+        }
+
+        /* Cards */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .overview-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .overview-card:hover::before {
+            left: 100%;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.3);
+            border-color: var(--primary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .overview-card:hover .card-icon {
+            transform: rotate(5deg) scale(1.1);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .card-description {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .card-features {
+            list-style: none;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+
+        .card-features li {
+            padding: 0.25rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-features li i {
+            color: var(--accent);
+            font-size: 0.75rem;
+        }
+
+        /* Details Panel */
+        .details-panel {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-top: 2rem;
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .details-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .details-panel.active {
+            display: block;
+            animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+
+        .details-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .details-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .details-close {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .details-close:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        /* Tabs */
+        .details-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .details-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 2px solid transparent;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .details-tab::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .details-tab:hover {
+            color: #cbd5e1;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .details-tab.active {
+            color: var(--primary);
+        }
+
+        .details-tab.active::after {
+            width: 100%;
+        }
+
+        .details-content {
+            color: #cbd5e1;
+            line-height: 1.8;
+        }
+
+        .details-content h3 {
+            color: #f1f5f9;
+            font-size: 1.125rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .details-content p {
+            margin-bottom: 1rem;
+        }
+
+        .details-content ul {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+
+        .details-content li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .details-content li i {
+            color: var(--accent);
+            margin-top: 0.25rem;
+        }
+
+        /* Example Button */
+        .example-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .example-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .example-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .example-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .example-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                transform: translateY(50px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .modal-title h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .modal-close {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .modal-body {
+            color: #cbd5e1;
+            line-height: 1.8;
+        }
+
+        .modal-demo {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Scroll Behavior */
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        /* Loading Animation */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+            filter: blur(2px);
+            transition: all 0.3s ease;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .mobile-menu-toggle i {
+            font-size: 1.25rem;
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Mobile Portrait Optimization */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                top: 0.75rem;
+                left: 0.75rem;
+                z-index: 1003;
+            }
+
+            .mobile-overlay {
+                display: none;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                transform: translateX(-100%);
+                z-index: 1002;
+                width: 80%;
+                max-width: 300px;
+                height: 100%;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+            }
+
+            .sidebar-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .sidebar-title h1 {
+                font-size: 1.25rem;
+            }
+
+            .sidebar-subtitle {
+                font-size: 0.75rem;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 0.75rem;
+                padding-top: 3.5rem;
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
+
+            .page-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .page-title {
+                font-size: 1.375rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .page-description {
+                font-size: 0.8125rem;
+                line-height: 1.5;
+            }
+
+            .overview-grid {
+                grid-template-columns: 1fr;
+                gap: 0.875rem;
+                width: 100%;
+            }
+
+            .overview-card {
+                padding: 1rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .card-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.125rem;
+            }
+
+            .card-title {
+                font-size: 1rem;
+                margin-bottom: 0.375rem;
+            }
+
+            .card-description {
+                font-size: 0.8125rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .card-features {
+                font-size: 0.75rem;
+                gap: 0.375rem;
+            }
+
+            .card-features li {
+                padding: 0.375rem 0;
+            }
+
+            .details-panel {
+                padding: 1rem;
+                margin-top: 1rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .details-header {
+                flex-direction: row;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+
+            .details-title {
+                font-size: 1.125rem;
+            }
+
+            .details-close {
+                min-width: 36px;
+                min-height: 36px;
+                padding: 0.5rem;
+            }
+
+            .details-tabs {
+                flex-direction: row;
+                gap: 0.375rem;
+                margin-bottom: 1rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .details-tab {
+                flex: 1 1 auto;
+                min-width: 90px;
+                padding: 0.625rem 0.75rem;
+                font-size: 0.8125rem;
+                white-space: nowrap;
+            }
+
+            .details-content {
+                font-size: 0.875rem;
+            }
+
+            .details-content h3 {
+                font-size: 1rem;
+                margin-top: 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .details-content ul {
+                gap: 0.5rem;
+            }
+
+            .details-content li {
+                font-size: 0.8125rem;
+                padding: 0.5rem 0;
+            }
+
+            .modal {
+                padding: 0.5rem;
+            }
+
+            .modal-content {
+                width: calc(100% - 1rem);
+                max-width: calc(100vw - 1rem);
+                max-height: 85vh;
+                padding: 1.25rem;
+                margin: 0.5rem;
+                border-radius: 16px;
+                box-sizing: border-box;
+            }
+
+            .modal-header {
+                margin-bottom: 1rem;
+            }
+
+            .modal-title {
+                gap: 0.625rem;
+            }
+
+            .modal-title span {
+                font-size: 1.5rem;
+            }
+
+            .modal-title h2 {
+                font-size: 1.125rem;
+            }
+
+            .modal-close {
+                min-width: 36px;
+                min-height: 36px;
+            }
+
+            .modal-body {
+                font-size: 0.875rem;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .modal-body p {
+                font-size: 0.8125rem;
+                line-height: 1.6;
+            }
+
+            .modal-actions {
+                margin-top: 1.25rem;
+            }
+
+            .example-btn {
+                width: 100%;
+                padding: 0.875rem 1.5rem;
+                font-size: 0.9375rem;
+            }
+
+            .nav-section-title {
+                font-size: 0.6875rem;
+                padding: 0.75rem 1rem 0.375rem;
+            }
+
+            .nav-item {
+                padding: 0.75rem 1rem;
+                font-size: 0.9375rem;
+            }
+
+            .nav-item i {
+                font-size: 1.125rem;
+            }
+        }
+
+        /* Small Mobile (Portrait) */
+        @media (max-width: 480px) {
+            .mobile-menu-toggle {
+                top: 0.5rem;
+                left: 0.5rem;
+                padding: 0.625rem;
+            }
+
+            .main-content {
+                padding: 0.5rem;
+                padding-top: 3rem;
+            }
+
+            .page-title {
+                font-size: 1.25rem;
+            }
+
+            .page-description {
+                font-size: 0.75rem;
+            }
+
+            .overview-card {
+                padding: 0.875rem;
+            }
+
+            .card-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .card-title {
+                font-size: 0.9375rem;
+            }
+
+            .card-description {
+                font-size: 0.75rem;
+            }
+
+            .card-features {
+                font-size: 0.6875rem;
+            }
+
+            .details-panel {
+                padding: 0.875rem;
+            }
+
+            .details-title {
+                font-size: 1rem;
+            }
+
+            .details-tab {
+                min-width: 80px;
+                padding: 0.5rem 0.625rem;
+                font-size: 0.75rem;
+            }
+
+            .modal-content {
+                padding: 1rem;
+                max-height: 90vh;
+            }
+
+            .modal-title h2 {
+                font-size: 1rem;
+            }
+
+            .sidebar {
+                width: 90%;
+            }
+        }
+
+        /* Tablet Optimization */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .overview-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sidebar {
+                width: 240px;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .nav-item {
+                min-height: 48px;
+                padding: 0.875rem 1rem;
+            }
+
+            .overview-card {
+                min-height: auto;
+                padding: 1.125rem;
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+            }
+
+            .details-tab {
+                min-height: 44px;
+                -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+            }
+
+            .example-btn {
+                min-height: 48px;
+                -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+            }
+
+            .details-close,
+            .modal-close {
+                min-width: 44px;
+                min-height: 44px;
+                -webkit-tap-highlight-color: rgba(239, 68, 68, 0.1);
+            }
+
+            .mobile-menu-toggle {
+                min-width: 48px;
+                min-height: 48px;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            /* Disable hover effects on touch devices */
+            .nav-item:hover,
+            .overview-card:hover,
+            .details-tab:hover {
+                transform: none;
+            }
+
+            /* Add active state for touch */
+            .nav-item:active,
+            .overview-card:active,
+            .details-tab:active,
+            .example-btn:active {
+                transform: scale(0.98);
+                opacity: 0.9;
+            }
+        }
+
+        /* Discord Simulation Styles */
+        .discord-chat {
+            background: #36393f;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #dcddde;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .discord-message {
+            display: flex;
+            margin-bottom: 16px;
+            padding: 4px 0;
+        }
+
+        .discord-message:hover {
+            background: rgba(4, 4, 5, 0.07);
+        }
+
+        .discord-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 16px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .discord-avatar.user {
+            background: #5865f2;
+        }
+
+        .discord-avatar.bot {
+            background: #57f287;
+        }
+
+        .discord-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .discord-username {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .discord-username.user {
+            color: #dcddde;
+        }
+
+        .discord-username.bot {
+            color: #57f287;
+        }
+
+        .discord-bot-tag {
+            background: #5865f2;
+            color: white;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .discord-timestamp {
+            color: #72767d;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .discord-text {
+            color: #dcddde;
+            line-height: 1.375;
+            word-wrap: break-word;
+        }
+
+        .discord-embed {
+            display: flex;
+            margin-top: 8px;
+            max-width: 520px;
+        }
+
+        .discord-embed-color {
+            width: 4px;
+            border-radius: 3px 0 0 3px;
+            flex-shrink: 0;
+        }
+
+        .discord-embed-content {
+            background: #2f3136;
+            border-radius: 0 4px 4px 0;
+            padding: 12px 16px;
+            flex: 1;
+        }
+
+        .discord-embed-title {
+            color: #00b0f4;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .discord-embed-description {
+            color: #dcddde;
+            font-size: 14px;
+            line-height: 1.375;
+            margin-bottom: 8px;
+        }
+
+        .discord-embed-field {
+            margin-bottom: 8px;
+        }
+
+        .discord-embed-field-name {
+            color: #dcddde;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .discord-embed-field-value {
+            color: #dcddde;
+            font-size: 14px;
+            line-height: 1.375;
+        }
+
+        .discord-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .discord-button {
+            background: #5865f2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .discord-button:hover {
+            background: #4752c4;
+        }
+
+        .discord-button.secondary {
+            background: #4f545c;
+        }
+
+        .discord-button.secondary:hover {
+            background: #5d6269;
+        }
+
+        .discord-button.success {
+            background: #3ba55d;
+        }
+
+        .discord-button.success:hover {
+            background: #2d7d46;
+        }
+
+        .discord-button.danger {
+            background: #ed4245;
+        }
+
+        .discord-button.danger:hover {
+            background: #c03537;
+        }
+
+        .discord-reactions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .discord-reaction {
+            background: rgba(88, 101, 242, 0.1);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            color: #dcddde;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .discord-reaction:hover {
+            background: rgba(88, 101, 242, 0.2);
+            border-color: rgba(88, 101, 242, 0.5);
+        }
+
+        .discord-reaction-count {
+            color: #b9bbbe;
+            font-size: 12px;
+        }
+
+        /* Utilities */
+        .text-muted {
+            color: #94a3b8;
+        }
+
+        .badge {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .badge.primary {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: var(--primary);
+        }
+
+        .badge.success {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: var(--accent);
+        }
+
+        .badge.warning {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: var(--warning);
+        }
+
+        .badge.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="fas fa-robot"></i>
+                    <h1>Arkodex Pro</h1>
+                </div>
+                <div class="sidebar-subtitle">Bot Multifunções para Discord</div>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-section-title">MÓDULOS PRINCIPAIS</div>
+                <a class="nav-item sidebar-item" data-section="automation">
+                    <i class="fas fa-magic"></i>
+                    <span>Automações (20+)</span>
+                </a>
+                
+                <a class="nav-item sidebar-item" data-section="protection">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Proteção</span>
+                </a>
+                
+                <a class="nav-item sidebar-item" data-section="store">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Loja</span>
+                </a>
+                
+                <a class="nav-item sidebar-item" data-section="tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Tickets</span>
+                </a>
+                
+                <a class="nav-item sidebar-item" data-section="giveaways">
+                    <i class="fas fa-gift"></i>
+                    <span>Sorteios</span>
+                </a>
+                
+                <a class="nav-item sidebar-item" data-section="rendimentos">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Indicações</span>
+                </a>
+                
+                <div class="nav-section-title">GERENCIAMENTO</div>
+                <a class="nav-item sidebar-item" data-section="cloud">
+                    <i class="fas fa-cloud"></i>
+                    <span>Arkodex Cloud</span>
+                </a>
+                
+                <a class="nav-item sidebar-item" data-section="customization">
+                    <i class="fas fa-palette"></i>
+                    <span>Personalização</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <header class="page-header">
+                <h1 class="page-title">Arkodex Pro</h1>
+                <p class="page-description">Bot multifunções completo para Discord com recursos avançados de automação, moderação e entretenimento</p>
+            </header>
+
+            <div class="overview-grid" id="overviewCards">
+                <!-- Cards will be dynamically inserted here -->
+            </div>
+
+            <div class="details-panel" id="detailsPanel">
+                <!-- Details will be dynamically inserted here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Example Modal -->
+    <div class="modal" id="exampleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span id="exampleIcon">🎯</span>
+                    <h2 id="exampleTitle">Título do Exemplo</h2>
+                </div>
+                <button class="modal-close" onclick="closeExample()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="exampleDescription">Descrição do exemplo</p>
+                <div class="modal-demo" id="exampleDemo">
+                    <!-- Demo content will be inserted here -->
+                </div>
+                <div class="modal-actions">
+                    <button class="example-btn" id="exampleButton" onclick="executeExample()">
+                        Executar Exemplo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // System Data - FUNCIONALIDADES REAIS DO ARKODEX PRO
+        const systemData = {
+            automation: {
+                title: 'Automações',
+                icon: 'fa-magic',
+                description: 'Sistema completo de automação com 20+ tipos diferentes para seu servidor Discord',
+                subOptions: [
+                    {
+                        id: 'ai_chat',
+                        title: 'Ark-AI Chat',
+                        description: 'Chat com inteligência artificial integrado ao servidor',
+                        features: [
+                            'Conversação natural com IA',
+                            'Respostas contextualizadas',
+                            'Personalização de comportamento',
+                            'Histórico de conversas'
+                        ]
+                    },
+                    {
+                        id: 'ai_moderator',
+                        title: 'Ark-AI Moderator',
+                        description: 'Moderador com IA que detecta conteúdo inapropriado automaticamente',
+                        features: [
+                            'Detecção de toxicidade',
+                            'Filtro de conteúdo sensível',
+                            'Ações automáticas',
+                            'Logs detalhados'
+                        ]
+                    },
+                    {
+                        id: 'welcome',
+                        title: 'Boas-Vindas',
+                        description: 'Mensagens de boas-vindas personalizadas com componentes modernos',
+                        features: [
+                            'Embeds customizáveis',
+                            'Botões interativos',
+                            'Imagens personalizadas',
+                            'Múltiplos canais'
+                        ]
+                    },
+                    {
+                        id: 'invite_tracker',
+                        title: 'Invite Tracker',
+                        description: 'Rastreie convites de membros no servidor',
+                        features: [
+                            'Contagem de convites',
+                            'Ranking de convidadores',
+                            'Logs de entrada',
+                            'Estatísticas detalhadas'
+                        ]
+                    },
+                    {
+                        id: 'contador_membros',
+                        title: 'Contador de Membros',
+                        description: 'Contagem automática de membros por cargo em canais de voz',
+                        features: [
+                            'Atualização em tempo real',
+                            'Múltiplos cargos',
+                            'Formatação customizável',
+                            'Contador total do servidor'
+                        ]
+                    },
+                    {
+                        id: 'contador_call',
+                        title: 'Contador em Call',
+                        description: 'Contagem de membros em chamadas de voz',
+                        features: [
+                            'Monitoramento de calls',
+                            'Estatísticas de uso',
+                            'Canais específicos',
+                            'Histórico de atividade'
+                        ]
+                    },
+                    {
+                        id: 'contador_vendas',
+                        title: 'Contador de Vendas',
+                        description: 'Exiba o total de vendas do bot em tempo real',
+                        features: [
+                            'Total de vendas',
+                            'Valor arrecadado',
+                            'Atualização automática',
+                            'Múltiplas moedas'
+                        ]
+                    },
+                    {
+                        id: 'feedbacks',
+                        title: 'Monitor de Feedbacks',
+                        description: 'Monitora feedbacks negativos e alerta administradores',
+                        features: [
+                            'Detecção automática',
+                            'Alertas em tempo real',
+                            'Sistema de notificações',
+                            'Análise de sentimento'
+                        ]
+                    },
+                    {
+                        id: 'nuke',
+                        title: 'Nuke Automático',
+                        description: 'Recrie canais automaticamente após intervalo configurado',
+                        features: [
+                            'Agendamento flexível',
+                            'Preservação de permissões',
+                            'Backup de mensagens',
+                            'Logs de atividade'
+                        ]
+                    },
+                    {
+                        id: 'clean',
+                        title: 'Limpeza de Canais',
+                        description: 'Limpe canais automaticamente após intervalo',
+                        features: [
+                            'Limpeza agendada',
+                            'Filtros de mensagens',
+                            'Múltiplos canais',
+                            'Configuração por canal'
+                        ]
+                    },
+                    {
+                        id: 'lock_unlock',
+                        title: 'Lock/Unlock Automático',
+                        description: 'Tranque ou destranque canais automaticamente',
+                        features: [
+                            'Agendamento por horário',
+                            'Múltiplos canais',
+                            'Permissões customizadas',
+                            'Notificações'
+                        ]
+                    },
+                    {
+                        id: 'disparador_dm',
+                        title: 'Disparador de DMs',
+                        description: 'Envie mensagens diretas em massa para membros',
+                        features: [
+                            'Envio em massa',
+                            'Filtros por cargo',
+                            'Agendamento',
+                            'Estatísticas de entrega'
+                        ]
+                    },
+                    {
+                        id: 'msg_auto',
+                        title: 'Mensagens Automáticas',
+                        description: 'Envie mensagens automáticas em canais específicos',
+                        features: [
+                            'Agendamento flexível',
+                            'Embeds personalizados',
+                            'Múltiplos canais',
+                            'Variáveis dinâmicas'
+                        ]
+                    },
+                    {
+                        id: 'topics',
+                        title: 'Tópicos Automáticos',
+                        description: 'Crie tópicos automaticamente em mensagens',
+                        features: [
+                            'Criação automática',
+                            'Nomes personalizados',
+                            'Arquivamento automático',
+                            'Permissões configuráveis'
+                        ]
+                    },
+                    {
+                        id: 'reactions',
+                        title: 'Reações Automáticas',
+                        description: 'Adicione reações automáticas a mensagens ou canais',
+                        features: [
+                            'Palavras-chave',
+                            'Múltiplas reações',
+                            'Canais específicos',
+                            'Emojis personalizados'
+                        ]
+                    },
+                    {
+                        id: 'response_auto',
+                        title: 'Respostas Automáticas',
+                        description: 'Configure respostas automáticas para mensagens',
+                        features: [
+                            'Gatilhos customizados',
+                            'Respostas variadas',
+                            'Embeds e botões',
+                            'Múltiplas condições'
+                        ]
+                    },
+                    {
+                        id: 'repost',
+                        title: 'Repostagem de Produtos',
+                        description: 'Reposte produtos da loja automaticamente',
+                        features: [
+                            'Agendamento automático',
+                            'Múltiplos produtos',
+                            'Canais específicos',
+                            'Formatação customizada'
+                        ]
+                    },
+                    {
+                        id: 'suggestions',
+                        title: 'Sistema de Sugestões',
+                        description: 'Sistema completo de sugestões com votação',
+                        features: [
+                            'Votação com reações',
+                            'Aprovação/Rejeição',
+                            'Logs de sugestões',
+                            'Notificações ao autor'
+                        ]
+                    },
+                    {
+                        id: 'autorole',
+                        title: 'Autorole Avançado',
+                        description: 'Atribua cargos automaticamente baseado em compras',
+                        features: [
+                            'Cargos por produto',
+                            'Cargos por valor gasto',
+                            'Remoção automática',
+                            'Múltiplas regras'
+                        ]
+                    }
+                ]
+            },
+            protection: {
+                title: 'Proteção',
+                icon: 'fa-shield-alt',
+                description: 'Proteção avançada do servidor com anti-raid, anti-spam e muito mais',
+                subOptions: [
+                    {
+                        id: 'antiraid',
+                        title: 'Anti-Raid',
+                        description: 'Proteção inteligente contra ataques de raid',
+                        features: [
+                            'Detecção automática de raids',
+                            'Bloqueio de entradas em massa',
+                            'Sistema de verificação',
+                            'Logs de tentativas'
+                        ]
+                    },
+                    {
+                        id: 'antispam',
+                        title: 'Anti-Spam',
+                        description: 'Proteção contra spam e flood de mensagens',
+                        features: [
+                            'Detecção de spam',
+                            'Limites configuráveis',
+                            'Ações automáticas',
+                            'Whitelist de usuários'
+                        ]
+                    },
+                    {
+                        id: 'privatization',
+                        title: 'Sistema de Privatização',
+                        description: 'Privatize canais automaticamente',
+                        features: [
+                            'Controle de permissões',
+                            'Canais privados',
+                            'Acesso por cargo',
+                            'Logs de acesso'
+                        ]
+                    },
+                    {
+                        id: 'antinuke',
+                        title: 'Proteção Anti-Nuke',
+                        description: 'Proteção automática contra ataques de nuke',
+                        features: [
+                            'Detecção de ações suspeitas',
+                            'Backup automático',
+                            'Restauração rápida',
+                            'Bloqueio de contas'
+                        ]
+                    },
+                    {
+                        id: 'verification',
+                        title: 'Verificação de Membros',
+                        description: 'Sistema de verificação personalizado',
+                        features: [
+                            'Captcha customizado',
+                            'Verificação por botão',
+                            'Regras personalizadas',
+                            'Auto-kick de não verificados'
+                        ]
+                    },
+                    {
+                        id: 'invite_control',
+                        title: 'Controle de Convites',
+                        description: 'Rastreamento e controle de convites',
+                        features: [
+                            'Bloqueio de convites',
+                            'Whitelist de servidores',
+                            'Logs de convites',
+                            'Alertas automáticos'
+                        ]
+                    }
+                ]
+            },
+            store: {
+                title: 'Loja',
+                icon: 'fa-shopping-cart',
+                description: 'Sistema de loja completo com marketplace, produtos digitais e pagamentos integrados',
+                subOptions: [
+                    {
+                        id: 'products',
+                        title: 'Gestão de Produtos',
+                        description: 'Venda produtos digitais com entrega automática ou manual',
+                        features: [
+                            'Produtos digitais',
+                            'Entrega automática/manual',
+                            'Gestão de estoque',
+                            'Categorias personalizadas'
+                        ]
+                    },
+                    {
+                        id: 'marketplace',
+                        title: 'Marketplace',
+                        description: 'Marketplace integrado com carrinho de compras',
+                        features: [
+                            'Carrinho de compras',
+                            'Múltiplos produtos',
+                            'Filtros e busca',
+                            'Interface moderna'
+                        ]
+                    },
+                    {
+                        id: 'payments',
+                        title: 'Sistema de Pagamentos',
+                        description: 'Múltiplas formas de pagamento integradas',
+                        features: [
+                            'Mercado Pago',
+                            'Sync Wallet',
+                            'PIX automático',
+                            'QR Code personalizado'
+                        ]
+                    },
+                    {
+                        id: 'coupons',
+                        title: 'Cupons e Descontos',
+                        description: 'Sistema de cupons e descontos personalizados',
+                        features: [
+                            'Cupons de desconto',
+                            'Porcentagem ou valor fixo',
+                            'Limite de uso',
+                            'Data de validade'
+                        ]
+                    },
+                    {
+                        id: 'cashback',
+                        title: 'Sistema de Cashback',
+                        description: 'Cashback para fidelizar clientes',
+                        features: [
+                            'Porcentagem configurável',
+                            'Saldo acumulativo',
+                            'Uso em compras futuras',
+                            'Histórico de cashback'
+                        ]
+                    },
+                    {
+                        id: 'reports',
+                        title: 'Relatórios de Vendas',
+                        description: 'Relatórios detalhados de vendas e faturamento',
+                        features: [
+                            'Vendas por período',
+                            'Produtos mais vendidos',
+                            'Faturamento total',
+                            'Exportação de dados'
+                        ]
+                    }
+                ]
+            },
+            tickets: {
+                title: 'Tickets',
+                icon: 'fa-ticket-alt',
+                description: 'Sistema de tickets profissional para atendimento ao cliente',
+                subOptions: [
+                    {
+                        id: 'categories',
+                        title: 'Categorias Personalizadas',
+                        description: 'Crie categorias de atendimento personalizadas',
+                        features: [
+                            'Múltiplas categorias',
+                            'Equipes específicas',
+                            'Permissões por cargo',
+                            'Mensagens customizadas'
+                        ]
+                    },
+                    {
+                        id: 'transcripts',
+                        title: 'Transcrições Automáticas',
+                        description: 'Transcrições automáticas de todas as conversas',
+                        features: [
+                            'Salvamento automático',
+                            'Formato HTML',
+                            'Anexos preservados',
+                            'Busca por ticket'
+                        ]
+                    },
+                    {
+                        id: 'rating',
+                        title: 'Sistema de Avaliação',
+                        description: 'Avaliação do atendimento pelos clientes',
+                        features: [
+                            'Avaliação por estrelas',
+                            'Comentários opcionais',
+                            'Estatísticas de atendimento',
+                            'Ranking de atendentes'
+                        ]
+                    },
+                    {
+                        id: 'stats',
+                        title: 'Estatísticas',
+                        description: 'Estatísticas detalhadas de atendimento',
+                        features: [
+                            'Tempo médio de resposta',
+                            'Tickets por categoria',
+                            'Taxa de resolução',
+                            'Relatórios mensais'
+                        ]
+                    }
+                ]
+            },
+            rendimentos: {
+                title: 'Rendimentos',
+                icon: 'fa-chart-line',
+                description: 'Sistema de indicações e recompensas com anti-fraude',
+                subOptions: [
+                    {
+                        id: 'referrals',
+                        title: 'Sistema de Indicações',
+                        description: 'Ganhe recompensas indicando novos membros',
+                        features: [
+                            'Código de indicação único',
+                            'Rastreamento de indicados',
+                            'Recompensas automáticas',
+                            'Ranking de indicadores'
+                        ]
+                    },
+                    {
+                        id: 'antifraud',
+                        title: 'Anti-Fraude',
+                        description: 'Sistema inteligente de detecção de fraudes',
+                        features: [
+                            'Detecção de contas fake',
+                            'Validação de indicações',
+                            'Bloqueio automático',
+                            'Logs de tentativas'
+                        ]
+                    },
+                    {
+                        id: 'rewards',
+                        title: 'Recompensas',
+                        description: 'Configure recompensas por indicações',
+                        features: [
+                            'Recompensas por indicação',
+                            'Bônus por metas',
+                            'Produtos gratuitos',
+                            'Descontos exclusivos'
+                        ]
+                    }
+                ]
+            },
+            giveaways: {
+                title: 'Sorteios',
+                icon: 'fa-gift',
+                description: 'Sistema de sorteios personalizados com múltiplas condições',
+                subOptions: [
+                    {
+                        id: 'creation',
+                        title: 'Criação de Sorteios',
+                        description: 'Crie sorteios customizáveis com múltiplas opções',
+                        features: [
+                            'Prêmios personalizados',
+                            'Requisitos por cargo',
+                            'Duração configurável',
+                            'Múltiplos vencedores'
+                        ]
+                    },
+                    {
+                        id: 'verification',
+                        title: 'Verificação Automática',
+                        description: 'Verificação automática de participantes',
+                        features: [
+                            'Validação de requisitos',
+                            'Remoção de inválidos',
+                            'Logs de participação',
+                            'Anti-fraude'
+                        ]
+                    },
+                    {
+                        id: 'entries',
+                        title: 'Sistema de Entradas',
+                        description: 'Sistema de entradas por tempo ou cargo',
+                        features: [
+                            'Entradas por cargo',
+                            'Entradas por tempo',
+                            'Bônus de participação',
+                            'Limite de entradas'
+                        ]
+                    },
+                    {
+                        id: 'announcements',
+                        title: 'Anúncios Automáticos',
+                        description: 'Anúncios e contagem regressiva automática',
+                        features: [
+                            'Contagem regressiva',
+                            'Lembretes automáticos',
+                            'Anúncio de vencedores',
+                            'Mensagens personalizadas'
+                        ]
+                    }
+                ]
+            },
+            cloud: {
+                title: 'Arkodex Cloud',
+                icon: 'fa-cloud',
+                description: 'Gerenciamento remoto via painel web com backup e API REST',
+                subOptions: [
+                    {
+                        id: 'panel',
+                        title: 'Painel Web',
+                        description: 'Gerencie seu bot remotamente via painel web',
+                        features: [
+                            'Interface intuitiva',
+                            'Acesso remoto',
+                            'Configurações em tempo real',
+                            'Dashboard completo'
+                        ]
+                    },
+                    {
+                        id: 'gifts',
+                        title: 'Sistema de Gifts',
+                        description: 'Crie e gerencie códigos promocionais',
+                        features: [
+                            'Códigos personalizados',
+                            'Limite de uso',
+                            'Data de validade',
+                            'Rastreamento de uso'
+                        ]
+                    },
+                    {
+                        id: 'backup',
+                        title: 'Backup Automático',
+                        description: 'Backup automático de todas as configurações',
+                        features: [
+                            'Backup diário',
+                            'Armazenamento na nuvem',
+                            'Restauração rápida',
+                            'Histórico de backups'
+                        ]
+                    },
+                    {
+                        id: 'api',
+                        title: 'API REST',
+                        description: 'API REST completa para integrações',
+                        features: [
+                            'Endpoints completos',
+                            'Documentação detalhada',
+                            'Autenticação segura',
+                            'Webhooks'
+                        ]
+                    },
+                    {
+                        id: 'logs',
+                        title: 'Logs em Tempo Real',
+                        description: 'Visualize logs de todas as atividades',
+                        features: [
+                            'Logs em tempo real',
+                            'Filtros avançados',
+                            'Busca por evento',
+                            'Exportação de logs'
+                        ]
+                    }
+                ]
+            },
+            customization: {
+                title: 'Personalização',
+                icon: 'fa-palette',
+                description: 'Personalize completamente a interface do bot',
+                subOptions: [
+                    {
+                        id: 'colors',
+                        title: 'Cores Personalizadas',
+                        description: 'Customize todas as cores da interface',
+                        features: [
+                            'Cores de embeds',
+                            'Cores de botões',
+                            'Paleta personalizada',
+                            'Preview em tempo real'
+                        ]
+                    },
+                    {
+                        id: 'display_mode',
+                        title: 'Modo de Exibição',
+                        description: 'Escolha entre embed ou componentes V2',
+                        features: [
+                            'Modo Embed (clássico)',
+                            'Modo Components V2',
+                            'Alternância fácil',
+                            'Compatibilidade total'
+                        ]
+                    },
+                    {
+                        id: 'banners',
+                        title: 'Banners e Imagens',
+                        description: 'Adicione banners e imagens customizáveis',
+                        features: [
+                            'Banners de produtos',
+                            'Logos personalizados',
+                            'Imagens de categorias',
+                            'Suporte a GIFs'
+                        ]
+                    },
+                    {
+                        id: 'emojis',
+                        title: 'Emojis Personalizados',
+                        description: 'Use emojis personalizados em toda interface',
+                        features: [
+                            'Emojis do servidor',
+                            'Emojis externos',
+                            'Configuração por módulo',
+                            'Fallback automático'
+                        ]
+                    },
+                    {
+                        id: 'interface',
+                        title: 'Interface Responsiva',
+                        description: 'Interface moderna e responsiva',
+                        features: [
+                            'Design moderno',
+                            'Navegação intuitiva',
+                            'Botões interativos',
+                            'Menus dropdown'
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Global Variables
+        let currentSection = null;
+        let currentSubOption = null;
+        let sidebarOpen = true;
+
+        // Navigation Functions
+        function navigateToSection(sectionId) {
+            currentSection = sectionId;
+            currentSubOption = null;
+            
+            const section = systemData[sectionId];
+            if (!section) return;
+            
+            // Update UI
+            updatePageHeader(section.icon, section.title, section.description);
+            updateSidebarNavigation(sectionId);
+            showSubOptions(section);
+            hideDetails();
+            scrollToTop();
+        }
+
+        function navigateToSubOption(sectionId, subOptionId) {
+            currentSubOption = subOptionId;
+            
+            const section = systemData[sectionId];
+            const subOption = section.subOptions.find(opt => opt.id === subOptionId);
+            
+            if (!subOption) return;
+            
+            // Update UI
+            updateSidebarNavigation(sectionId, subOptionId);
+            showDetails(subOption);
+            scrollToTop();
+        }
+
+        // UI Update Functions
+        function updatePageHeader(icon, title, description) {
+            const pageHeader = document.querySelector('.page-header');
+            if (pageHeader) {
+                pageHeader.innerHTML = `
+                    <h1 class="page-title">
+                        <i class="fas ${icon}"></i>
+                        ${title}
+                    </h1>
+                    <p class="page-description">${description}</p>
+                `;
+            }
+        }
+
+        function updateSidebarNavigation(sectionId, subOptionId = null) {
+            // Remove active from all items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active to current section
+            const sectionItem = document.querySelector(`[data-section="${sectionId}"]`);
+            if (sectionItem) {
+                sectionItem.classList.add('active');
+            }
+        }
+
+        function showSubOptions(section) {
+            const overviewCards = document.getElementById('overviewCards');
+            
+            overviewCards.innerHTML = section.subOptions.map(subOption => `
+                <div class="overview-card" onclick="navigateToSubOption('${currentSection}', '${subOption.id}')">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas ${section.icon}"></i>
+                        </div>
+                        <div class="card-title">${subOption.title}</div>
+                    </div>
+                    <div class="card-description">${subOption.description}</div>
+                    <ul class="card-features">
+                        ${subOption.features.map(feature => `
+                            <li>
+                                <i class="fas fa-check"></i>
+                                ${feature}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        function showDetails(subOption) {
+            const detailsPanel = document.getElementById('detailsPanel');
+            const detailedInfo = getDetailedDescription(currentSection, currentSubOption, subOption);
+            const exampleData = getDiscordExample(currentSection, currentSubOption, subOption);
+            
+            detailsPanel.innerHTML = `
+                <div class="details-header">
+                    <h2 class="details-title">${subOption.title}</h2>
+                    <button class="details-close" onclick="hideDetails()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="details-content" id="detailsContent" style="margin-top: 1.5rem;">
+                    <h3>📋 Sobre esta Funcionalidade</h3>
+                    <p style="margin-bottom: 1.5rem; line-height: 1.8; color: #cbd5e1;">${detailedInfo.description}</p>
+                    
+                    <h3>🔧 Recursos Técnicos</h3>
+                    <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                        ${subOption.features.map((feature, index) => `
+                            <div style="padding: 1rem; background: var(--glass); border-radius: 8px; border: 1px solid var(--glass-border);">
+                                <div style="display: flex; align-items: start; gap: 0.75rem;">
+                                    <div style="flex-shrink: 0; width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
+                                        ${index + 1}
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h4 style="margin: 0 0 0.5rem 0; color: var(--primary); font-size: 1rem;">${feature}</h4>
+                                        <p style="margin: 0; font-size: 0.875rem; color: #94a3b8; line-height: 1.6;">
+                                            ${detailedInfo.features[index] || 'Recurso avançado que melhora a funcionalidade do seu servidor Discord.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <h3>💬 Exemplo no Discord</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.8; color: #cbd5e1;">Veja como funciona na prática:</p>
+                    ${exampleData.demo}
+                    
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1)); border-radius: 8px; border: 1px solid var(--primary);">
+                        <p style="margin: 0; font-size: 0.875rem;">
+                            <i class="fas fa-rocket" style="color: var(--primary);"></i>
+                            <strong>Performance:</strong> Todos os recursos são otimizados para máxima velocidade e confiabilidade.
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            detailsPanel.classList.add('active');
+            
+            // Scroll automático para o painel de detalhes
+            setTimeout(() => {
+                detailsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function hideDetails() {
+            const detailsPanel = document.getElementById('detailsPanel');
+            detailsPanel.classList.remove('active');
+            currentSubOption = null;
+        }
+
+        function getDetailedDescription(sectionId, subOptionId, subOption) {
+            const key = `${sectionId}-${subOptionId}`;
+            const descriptions = {
+                // AUTOMAÇÕES
+                'automation-ai_chat': {
+                    description: 'O Ark-AI Chat é um sistema de inteligência artificial avançado que permite conversas naturais e contextualizadas com os membros do seu servidor. Utilizando modelos de linguagem de última geração, o bot consegue entender perguntas complexas, manter contexto entre mensagens e fornecer respostas personalizadas baseadas no histórico da conversa.',
+                    features: [
+                        'Sistema de IA que processa linguagem natural e entende contexto, permitindo conversas fluidas e naturais como se fosse um humano.',
+                        'O bot mantém memória das mensagens anteriores, permitindo referências e continuidade na conversa sem precisar repetir informações.',
+                        'Configure tom, personalidade e estilo de resposta da IA para alinhar com a identidade do seu servidor, desde formal até descontraído.',
+                        'Todas as interações são registradas para análise, permitindo melhorias contínuas e insights sobre as dúvidas mais comuns dos membros.'
+                    ]
+                },
+                'automation-ai_moderator': {
+                    description: 'O Ark-AI Moderator utiliza inteligência artificial para detectar automaticamente conteúdo tóxico, ofensivo ou inapropriado em tempo real. O sistema analisa mensagens, contexto e padrões de comportamento para identificar violações das regras antes que causem problemas no servidor.',
+                    features: [
+                        'IA treinada para identificar linguagem tóxica, ofensas, xingamentos e comportamentos agressivos com alta precisão.',
+                        'Bloqueia automaticamente conteúdo adulto, spam, links maliciosos e phishing antes que outros membros vejam.',
+                        'Sistema configurável de punições automáticas: avisos, mutes temporários, kicks ou bans baseados na gravidade da infração.',
+                        'Registro completo de todas as ações de moderação com timestamps, evidências e histórico do usuário para revisão da staff.'
+                    ]
+                },
+                'automation-welcome': {
+                    description: 'Sistema de boas-vindas totalmente personalizável que recebe novos membros com mensagens, embeds e botões interativos. Crie uma primeira impressão profissional e guie novos membros pelos canais importantes do servidor.',
+                    features: [
+                        'Crie mensagens de boas-vindas com embeds personalizados, imagens, GIFs e variáveis dinâmicas como nome do usuário e contagem de membros.',
+                        'Adicione botões interativos para ler regras, se apresentar ou acessar canais importantes com um clique.',
+                        'Envie mensagens em canais públicos ou via DM privada, com opção de deletar automaticamente após um tempo.',
+                        'Atribua cargos automaticamente aos novos membros e configure diferentes mensagens para membros normais e bots.'
+                    ]
+                },
+                'automation-invite_tracker': {
+                    description: 'Sistema completo de rastreamento de convites que monitora quem convidou cada membro, quantos convites cada pessoa tem e oferece sistema de recompensas por recrutamento. Perfeito para servidores que querem incentivar o crescimento orgânico.',
+                    features: [
+                        'Rastreamento preciso de todos os convites, mostrando quem convidou cada membro e quantos convites cada pessoa possui.',
+                        'Estatísticas detalhadas incluindo membros ativos, membros que saíram, taxa de retenção e ranking de recrutadores.',
+                        'Sistema de recompensas automático que dá cargos especiais ou benefícios para quem atingir metas de convites.',
+                        'Leaderboard atualizado em tempo real mostrando os top recrutadores do servidor com estatísticas completas.'
+                    ]
+                },
+                'automation-reactions': {
+                    description: 'Adicione reações automáticas em mensagens específicas baseadas em palavras-chave, canais ou padrões. Ótimo para engajamento, enquetes rápidas ou simplesmente adicionar personalidade ao servidor.',
+                    features: [
+                        'Configure reações automáticas baseadas em palavras-chave específicas, como adicionar 🎮 quando alguém mencionar "jogo".',
+                        'Defina reações diferentes para canais específicos, permitindo comportamentos personalizados por área do servidor.',
+                        'Crie enquetes instantâneas adicionando automaticamente emojis de votação em mensagens de enquete.',
+                        'Suporte para emojis padrão do Discord e emojis personalizados do servidor para máxima personalização.'
+                    ]
+                },
+                // PROTEÇÃO
+                'protection-antiraid': {
+                    description: 'Sistema avançado de proteção contra raids que detecta automaticamente padrões de entrada suspeitos e bloqueia ataques antes que causem danos. Protege seu servidor 24/7 contra invasores mal-intencionados.',
+                    features: [
+                        'Algoritmo inteligente que analisa padrões de entrada, idade das contas e comportamento para detectar raids em tempo real.',
+                        'Bloqueio automático de múltiplas entradas simultâneas, impedindo que raiders invadam o servidor em massa.',
+                        'Sistema de verificação com captcha ou botões que valida novos membros antes de dar acesso completo ao servidor.',
+                        'Logs detalhados de todas as tentativas de raid com informações das contas bloqueadas para análise de segurança.'
+                    ]
+                },
+                'protection-antispam': {
+                    description: 'Proteção automática contra spam que detecta e pune usuários que enviam mensagens repetidas, links suspeitos ou conteúdo indesejado. Mantém os canais limpos e organizados sem intervenção manual.',
+                    features: [
+                        'Detecção de spam por frequência: identifica usuários enviando muitas mensagens em pouco tempo e aplica timeout automático.',
+                        'Filtro de mensagens duplicadas que remove automaticamente conteúdo repetido e pune o spammer.',
+                        'Bloqueio de links suspeitos, convites de outros servidores e conteúdo promocional não autorizado.',
+                        'Sistema de punições escalonadas: primeira infração é aviso, depois timeout, e casos graves resultam em ban.'
+                    ]
+                },
+                // LOJA
+                'store-products': {
+                    description: 'Sistema completo de gestão de produtos digitais que permite vender keys, contas, acessos VIP e qualquer tipo de produto digital com entrega automática ou manual. Controle total sobre estoque, preços e categorias.',
+                    features: [
+                        'Crie produtos com nome, descrição, preço, imagens e opções de customização para venda de qualquer item digital.',
+                        'Escolha entre entrega instantânea via DM ou aprovação manual da staff para produtos que precisam de verificação.',
+                        'Sistema de estoque que rastreia quantidade disponível e envia alertas quando produtos estão acabando.',
+                        'Organize produtos em categorias personalizadas como "VIP", "Games", "Keys" para facilitar navegação dos clientes.'
+                    ]
+                },
+                'store-marketplace': {
+                    description: 'Marketplace público interativo onde clientes podem navegar por categorias, visualizar produtos e fazer compras diretamente pelo Discord. Interface intuitiva com botões e embeds profissionais.',
+                    features: [
+                        'Interface de marketplace com botões de categoria mostrando quantidade de produtos disponíveis em cada uma.',
+                        'Visualização detalhada de produtos com imagens, descrições, preços e opções antes da compra.',
+                        'Sistema de carrinho que permite adicionar múltiplos produtos antes de finalizar a compra.',
+                        'Customização completa de cores, emojis, mensagens e layout do marketplace para combinar com sua marca.'
+                    ]
+                },
+                'store-payments': {
+                    description: 'Sistema de pagamentos integrado com PIX e cartão de crédito via Mercado Pago. Aprovação automática de pagamentos e entrega instantânea de produtos após confirmação.',
+                    features: [
+                        'Integração com Mercado Pago para aceitar PIX e cartão de crédito com segurança e confiabilidade.',
+                        'Aprovação automática de pagamentos PIX em segundos, sem necessidade de verificação manual.',
+                        'Entrega instantânea do produto via DM assim que o pagamento é confirmado pelo gateway.',
+                        'Sistema de cupons de desconto e cashback para fidelizar clientes e aumentar vendas.'
+                    ]
+                },
+                // TICKETS
+                'tickets-categories': {
+                    description: 'Sistema de tickets com múltiplas categorias personalizadas como Suporte, Vendas, Parcerias e Denúncias. Cada categoria pode ter equipe específica, permissões e mensagens customizadas.',
+                    features: [
+                        'Crie categorias ilimitadas de tickets com nomes, emojis e descrições personalizadas para cada tipo de atendimento.',
+                        'Atribua equipes específicas para cada categoria, garantindo que as pessoas certas atendam cada tipo de ticket.',
+                        'Configure permissões por cargo para controlar quem pode ver, responder ou gerenciar tickets de cada categoria.',
+                        'Mensagens de abertura personalizadas que explicam o que o usuário deve fazer e tempo estimado de resposta.'
+                    ]
+                },
+                'tickets-transcripts': {
+                    description: 'Sistema automático de transcrição que salva todo o histórico de mensagens do ticket em formato HTML ou TXT. Perfeito para auditoria, treinamento de equipe e resolução de disputas.',
+                    features: [
+                        'Transcrição automática de todas as mensagens, anexos e interações do ticket ao fechar.',
+                        'Envio da transcrição via DM para o usuário e para canal de logs da staff para registro.',
+                        'Formato HTML com cores e layout do Discord preservados para fácil leitura e referência.',
+                        'Estatísticas do ticket incluindo duração, número de mensagens, atendente responsável e avaliação.'
+                    ]
+                },
+                // SORTEIOS
+                'giveaways-create': {
+                    description: 'Sistema completo de sorteios com requisitos customizáveis, verificação automática de participantes e seleção aleatória de vencedores. Perfeito para engajar a comunidade e premiar membros ativos.',
+                    features: [
+                        'Crie sorteios com prêmio, quantidade de vencedores, duração e requisitos de participação personalizados.',
+                        'Sistema de requisitos: exija cargo específico, tempo mínimo no servidor, seguir redes sociais ou convites.',
+                        'Verificação automática que remove participantes inválidos antes do sorteio para garantir justiça.',
+                        'Anúncio automático do vencedor com menção e instruções para resgatar o prêmio.'
+                    ]
+                },
+                // CLOUD
+                'cloud-panel': {
+                    description: 'Painel web completo para gerenciar seu bot remotamente de qualquer lugar. Dashboard com estatísticas em tempo real, configurações, logs e controle total sobre todas as funcionalidades.',
+                    features: [
+                        'Interface web intuitiva e responsiva que funciona em desktop, tablet e celular para gestão remota.',
+                        'Dashboard com gráficos de vendas, tickets abertos, novos membros e outras métricas importantes em tempo real.',
+                        'Configure todas as funcionalidades do bot pelo painel sem precisar usar comandos no Discord.',
+                        'Sistema de logs completo mostrando todas as ações, erros e eventos do bot para monitoramento.'
+                    ]
+                },
+                // PERSONALIZAÇÃO
+                'customization-colors': {
+                    description: 'Personalize completamente as cores dos embeds, botões e mensagens do bot para combinar com a identidade visual do seu servidor. Escolha cores predefinidas ou use códigos HEX personalizados.',
+                    features: [
+                        'Paleta de cores predefinidas incluindo azul, verde, roxo, vermelho e amarelo para mudança rápida.',
+                        'Modo personalizado que aceita qualquer código HEX para cores totalmente customizadas.',
+                        'Preview em tempo real mostrando como as cores ficarão nos embeds antes de aplicar.',
+                        'Aplicação instantânea em todos os embeds do bot sem necessidade de reiniciar ou reconfigurar.'
+                    ]
+                },
+                // AUTOMAÇÕES - Restantes
+                'automation-contador_membros': {
+                    description: 'Sistema de contagem automática que exibe em canais de voz o número de membros com cargos específicos ou total do servidor. Atualização em tempo real sempre que membros entram, saem ou ganham/perdem cargos.',
+                    features: [
+                        'Atualização instantânea do contador sempre que há mudança de membros ou cargos no servidor.',
+                        'Configure contadores para diferentes cargos simultaneamente, cada um em seu próprio canal de voz.',
+                        'Personalize o formato do nome do canal com variáveis como emoji, nome do cargo e número de membros.',
+                        'Contador especial que mostra o total de membros do servidor em tempo real.'
+                    ]
+                },
+                'automation-contador_call': {
+                    description: 'Monitora e exibe em tempo real quantos membros estão em chamadas de voz específicas. Perfeito para servidores de gaming ou comunidades que querem destacar atividade em calls.',
+                    features: [
+                        'Rastreamento em tempo real de membros conectados em canais de voz específicos.',
+                        'Estatísticas de uso mostrando horários de pico e média de usuários em call.',
+                        'Configure quais canais de voz devem ser monitorados e exibidos no contador.',
+                        'Histórico de atividade que registra quando e quantos membros usaram as calls ao longo do tempo.'
+                    ]
+                },
+                'automation-contador_vendas': {
+                    description: 'Exibe em um canal de voz o total de vendas realizadas pela loja do bot. Mostra quantidade de vendas ou valor total arrecadado, atualizando automaticamente a cada nova compra.',
+                    features: [
+                        'Contador que mostra o número total de vendas realizadas pela loja do bot.',
+                        'Exibição do valor total arrecadado com todas as vendas, com formatação de moeda.',
+                        'Atualização automática e instantânea sempre que uma nova venda é confirmada.',
+                        'Suporte para múltiplas moedas (BRL, USD, EUR) com conversão automática.'
+                    ]
+                },
+                'automation-feedbacks': {
+                    description: 'Sistema inteligente que monitora feedbacks e avaliações deixadas por clientes, alertando administradores quando há feedbacks negativos para ação rápida.',
+                    features: [
+                        'Detecção automática de feedbacks negativos baseada em avaliação por estrelas ou palavras-chave.',
+                        'Alertas instantâneos enviados para administradores via DM ou canal específico quando há feedback negativo.',
+                        'Sistema de notificações configurável com diferentes níveis de prioridade baseado na gravidade.',
+                        'Análise de sentimento que identifica palavras negativas e classifica automaticamente o feedback.'
+                    ]
+                },
+                'automation-nuke': {
+                    description: 'Recria canais automaticamente em intervalos configurados, mantendo permissões e configurações. Útil para limpar histórico de mensagens e manter canais sempre frescos.',
+                    features: [
+                        'Agendamento flexível para recriar canais em horários específicos ou intervalos regulares.',
+                        'Preservação automática de todas as permissões, categoria e configurações do canal original.',
+                        'Sistema de backup que salva as últimas mensagens antes de recriar o canal.',
+                        'Logs detalhados de todas as atividades de nuke com timestamp e responsável.'
+                    ]
+                },
+                'automation-clean': {
+                    description: 'Limpeza automática de mensagens em canais específicos após intervalo configurado. Mantém canais organizados sem intervenção manual.',
+                    features: [
+                        'Limpeza agendada que remove mensagens antigas automaticamente em horários definidos.',
+                        'Filtros avançados para limpar apenas mensagens de bots, com anexos ou de usuários específicos.',
+                        'Configure diferentes intervalos de limpeza para múltiplos canais simultaneamente.',
+                        'Configuração individual por canal com regras específicas de limpeza para cada um.'
+                    ]
+                },
+                'automation-lock_unlock': {
+                    description: 'Tranque ou destranque canais automaticamente em horários específicos. Perfeito para controlar quando membros podem enviar mensagens.',
+                    features: [
+                        'Agendamento por horário específico para trancar/destrancar canais automaticamente.',
+                        'Configure múltiplos canais para serem trancados/destrancados simultaneamente.',
+                        'Permissões customizadas que definem quais cargos são afetados pelo lock/unlock.',
+                        'Notificações automáticas informando membros quando canais são trancados ou liberados.'
+                    ]
+                },
+                'automation-disparador_dm': {
+                    description: 'Envie mensagens diretas em massa para membros do servidor com filtros avançados. Ideal para comunicados importantes ou campanhas de marketing.',
+                    features: [
+                        'Envio em massa de DMs para todos os membros ou grupos específicos do servidor.',
+                        'Filtros por cargo permitindo enviar mensagens apenas para membros com cargos específicos.',
+                        'Sistema de agendamento para enviar mensagens em horários estratégicos.',
+                        'Estatísticas completas mostrando quantas mensagens foram entregues, falharam ou foram bloqueadas.'
+                    ]
+                },
+                'automation-msg_auto': {
+                    description: 'Envie mensagens automáticas em canais específicos com agendamento flexível. Perfeito para lembretes, anúncios recorrentes ou conteúdo programado.',
+                    features: [
+                        'Agendamento flexível com intervalos personalizados (minutos, horas, dias, semanas).',
+                        'Embeds personalizados com cores, imagens, campos e botões para mensagens profissionais.',
+                        'Configure mensagens automáticas em múltiplos canais com conteúdos diferentes.',
+                        'Variáveis dinâmicas que inserem informações em tempo real como contagem de membros, data/hora, etc.'
+                    ]
+                },
+                'automation-topics': {
+                    description: 'Crie tópicos (threads) automaticamente em mensagens de canais específicos. Organiza discussões e mantém canais limpos.',
+                    features: [
+                        'Criação automática de tópicos sempre que uma mensagem é enviada em canais configurados.',
+                        'Nomes personalizados para tópicos usando variáveis como nome do autor, data ou conteúdo da mensagem.',
+                        'Arquivamento automático de tópicos inativos após período configurável.',
+                        'Permissões configuráveis que controlam quem pode criar, visualizar e participar dos tópicos.'
+                    ]
+                },
+                'automation-response_auto': {
+                    description: 'Configure respostas automáticas para mensagens específicas. O bot responde automaticamente quando detecta palavras-chave ou padrões.',
+                    features: [
+                        'Gatilhos customizados baseados em palavras-chave, frases exatas ou expressões regulares.',
+                        'Respostas variadas com múltiplas opções para cada gatilho, escolhidas aleatoriamente.',
+                        'Embeds e botões interativos nas respostas para criar experiências ricas.',
+                        'Múltiplas condições como canal específico, cargo do autor ou horário para ativar respostas.'
+                    ]
+                },
+                'automation-repost': {
+                    description: 'Reposte produtos da loja automaticamente em intervalos configurados. Mantém produtos sempre visíveis e aumenta vendas.',
+                    features: [
+                        'Agendamento automático que reposta produtos em intervalos regulares (horas, dias).',
+                        'Selecione múltiplos produtos para serem repostados em sequência ou aleatoriamente.',
+                        'Configure canais específicos onde cada produto deve ser repostado.',
+                        'Formatação customizada dos anúncios com embeds, imagens e botões de compra.'
+                    ]
+                },
+                'automation-suggestions': {
+                    description: 'Sistema completo de sugestões onde membros podem enviar ideias e a comunidade vota. Administradores podem aprovar ou rejeitar sugestões.',
+                    features: [
+                        'Votação com reações automáticas (👍👎) para membros expressarem opinião sobre sugestões.',
+                        'Sistema de aprovação/rejeição onde staff pode aceitar ou negar sugestões com motivo.',
+                        'Logs completos de todas as sugestões com status, votos e decisão final.',
+                        'Notificações automáticas ao autor informando quando sua sugestão foi aprovada ou rejeitada.'
+                    ]
+                },
+                'automation-autorole': {
+                    description: 'Atribua cargos automaticamente baseado em compras ou valor gasto na loja. Sistema de recompensas que incentiva compras.',
+                    features: [
+                        'Cargos atribuídos automaticamente quando cliente compra produtos específicos.',
+                        'Sistema de níveis VIP baseado em valor total gasto (Bronze, Prata, Ouro, Diamante).',
+                        'Remoção automática de cargos quando produtos expiram ou são reembolsados.',
+                        'Múltiplas regras simultâneas permitindo diferentes cargos para diferentes produtos ou valores.'
+                    ]
+                },
+                // PROTEÇÃO - Restantes
+                'protection-privatization': {
+                    description: 'Sistema de privatização que permite criar e gerenciar canais privados automaticamente. Controle total sobre quem pode acessar cada canal.',
+                    features: [
+                        'Controle granular de permissões por usuário ou cargo para cada canal privado.',
+                        'Criação de canais privados temporários ou permanentes com configurações específicas.',
+                        'Sistema de acesso baseado em cargos que adiciona/remove permissões automaticamente.',
+                        'Logs detalhados de todos os acessos e modificações em canais privatizados.'
+                    ]
+                },
+                'protection-antinuke': {
+                    description: 'Proteção avançada contra ataques de nuke que detecta ações suspeitas e restaura o servidor automaticamente.',
+                    features: [
+                        'Detecção inteligente de ações suspeitas como deleção em massa de canais, cargos ou bans.',
+                        'Backup automático e contínuo de configurações, canais, cargos e permissões do servidor.',
+                        'Restauração rápida que recupera o servidor ao estado anterior em segundos após ataque.',
+                        'Bloqueio automático de contas comprometidas que realizaram ações maliciosas.'
+                    ]
+                },
+                'protection-verification': {
+                    description: 'Sistema de verificação personalizado que valida novos membros antes de dar acesso completo ao servidor.',
+                    features: [
+                        'Captcha customizado com imagens, perguntas ou desafios para verificar que é humano.',
+                        'Verificação simples por botão onde membro clica para confirmar que leu as regras.',
+                        'Regras personalizadas de verificação como idade mínima da conta ou número de servidores.',
+                        'Auto-kick automático de membros que não se verificam dentro do tempo limite configurado.'
+                    ]
+                },
+                'protection-invite_control': {
+                    description: 'Rastreamento e controle avançado de convites do Discord. Bloqueie convites indesejados e monitore links compartilhados.',
+                    features: [
+                        'Bloqueio automático de links de convite de outros servidores Discord.',
+                        'Whitelist de servidores parceiros cujos convites são permitidos.',
+                        'Logs detalhados de todos os convites compartilhados com autor e canal.',
+                        'Alertas automáticos para moderadores quando convites suspeitos são detectados.'
+                    ]
+                },
+                // LOJA - Restantes
+                'store-coupons': {
+                    description: 'Sistema completo de cupons de desconto para incentivar vendas e recompensar clientes fiéis.',
+                    features: [
+                        'Crie cupons com códigos personalizados para campanhas de marketing.',
+                        'Desconto por porcentagem (ex: 20% OFF) ou valor fixo (ex: R$ 10 OFF).',
+                        'Limite de uso por cupom (uso único, 10 usos, ilimitado) e por usuário.',
+                        'Data de validade configurável para cupons temporários ou sazonais.'
+                    ]
+                },
+                'store-cashback': {
+                    description: 'Sistema de cashback que devolve porcentagem das compras como crédito para usar em compras futuras.',
+                    features: [
+                        'Porcentagem de cashback configurável por produto ou categoria (ex: 5% de volta).',
+                        'Saldo acumulativo que soma cashback de todas as compras do cliente.',
+                        'Uso em compras futuras permitindo usar saldo de cashback como desconto.',
+                        'Histórico completo mostrando quanto cashback foi ganho e usado em cada compra.'
+                    ]
+                },
+                // TICKETS - Restantes
+                'tickets-management': {
+                    description: 'Ferramentas avançadas de gerenciamento de tickets para equipe de suporte organizar e priorizar atendimentos.',
+                    features: [
+                        'Sistema de prioridade (baixa, média, alta, urgente) para organizar atendimentos.',
+                        'Atribuição de tickets para membros específicos da equipe de suporte.',
+                        'Tags e categorias customizadas para classificar e filtrar tickets.',
+                        'Estatísticas completas de tempo médio de resposta, tickets resolvidos e satisfação.'
+                    ]
+                },
+                'tickets-rating': {
+                    description: 'Sistema de avaliação onde clientes podem avaliar o atendimento após fechamento do ticket.',
+                    features: [
+                        'Avaliação por estrelas (1-5) para medir qualidade do atendimento.',
+                        'Comentários opcionais onde cliente pode deixar feedback detalhado.',
+                        'Estatísticas por atendente mostrando média de avaliações e feedbacks.',
+                        'Alertas para supervisores quando atendente recebe avaliações muito baixas.'
+                    ]
+                },
+                // SORTEIOS - Restantes
+                'giveaways-management': {
+                    description: 'Ferramentas de gerenciamento para controlar sorteios ativos, pausar, cancelar ou finalizar antecipadamente.',
+                    features: [
+                        'Painel de controle mostrando todos os sorteios ativos com status e participantes.',
+                        'Pausar sorteios temporariamente para fazer ajustes ou resolver problemas.',
+                        'Cancelar sorteios com reembolso automático se houver pagamento envolvido.',
+                        'Finalizar antecipadamente e sortear vencedor antes do prazo original.'
+                    ]
+                },
+                'giveaways-verification': {
+                    description: 'Verificação automática de participantes para garantir que cumprem todos os requisitos do sorteio.',
+                    features: [
+                        'Validação automática de requisitos como cargo, tempo no servidor ou seguir redes sociais.',
+                        'Remoção automática de participantes inválidos antes do sorteio.',
+                        'Sistema anti-fraude que detecta contas fake ou múltiplas participações.',
+                        'Logs de verificação mostrando quem foi removido e por qual motivo.'
+                    ]
+                },
+                'giveaways-entries': {
+                    description: 'Sistema de entradas que permite participantes ganharem mais chances de ganhar baseado em ações.',
+                    features: [
+                        'Entradas extras por cargo VIP ou nível de atividade no servidor.',
+                        'Entradas baseadas em tempo no servidor (quanto mais antigo, mais entradas).',
+                        'Bônus de participação para quem convida amigos ou compartilha o sorteio.',
+                        'Limite máximo de entradas para manter sorteio justo mesmo com bônus.'
+                    ]
+                },
+                'giveaways-announcements': {
+                    description: 'Anúncios automáticos e contagem regressiva para manter participantes engajados.',
+                    features: [
+                        'Contagem regressiva automática mostrando tempo restante até o sorteio.',
+                        'Lembretes automáticos enviados em intervalos (24h, 12h, 1h antes do fim).',
+                        'Anúncio automático do vencedor com menção e instruções para resgatar prêmio.',
+                        'Mensagens personalizadas para cada fase do sorteio (início, meio, fim).'
+                    ]
+                },
+                // CLOUD - Restantes
+                'cloud-gifts': {
+                    description: 'Sistema de códigos promocionais (gifts) que podem ser resgatados para ganhar produtos, cargos ou benefícios.',
+                    features: [
+                        'Crie códigos personalizados com letras e números para campanhas específicas.',
+                        'Limite de uso por código (uso único, múltiplos usos) e data de validade.',
+                        'Códigos podem dar produtos grátis, descontos, cargos VIP ou saldo.',
+                        'Rastreamento completo mostrando quem resgatou cada código e quando.'
+                    ]
+                },
+                'cloud-backup': {
+                    description: 'Sistema de backup automático que salva todas as configurações do bot na nuvem para recuperação rápida.',
+                    features: [
+                        'Backup diário automático de todas as configurações, produtos, tickets e dados.',
+                        'Armazenamento seguro na nuvem com criptografia e redundância.',
+                        'Restauração rápida que recupera configurações em poucos cliques.',
+                        'Histórico de backups permitindo restaurar versões anteriores se necessário.'
+                    ]
+                },
+                'cloud-api': {
+                    description: 'API REST completa para integrar o bot com sistemas externos, sites ou aplicativos personalizados.',
+                    features: [
+                        'Endpoints REST para todas as funcionalidades do bot (produtos, tickets, usuários).',
+                        'Autenticação segura com tokens API e rate limiting para prevenir abuso.',
+                        'Webhooks que notificam sistemas externos quando eventos importantes acontecem.',
+                        'Documentação completa com exemplos de código em múltiplas linguagens.'
+                    ]
+                },
+                // PERSONALIZAÇÃO - Restantes
+                'customization-embeds': {
+                    description: 'Personalize completamente os embeds do bot com título, descrição, imagens, campos e rodapé customizados.',
+                    features: [
+                        'Editor visual de embeds com preview em tempo real do resultado final.',
+                        'Customização de título, descrição, cor, thumbnail e imagem principal.',
+                        'Campos personalizados para organizar informações em seções.',
+                        'Rodapé customizado com texto, ícone e timestamp automático.'
+                    ]
+                },
+                'customization-messages': {
+                    description: 'Personalize todas as mensagens do bot incluindo boas-vindas, despedidas, logs e notificações.',
+                    features: [
+                        'Editor de mensagens com variáveis dinâmicas como {user}, {server}, {count}.',
+                        'Suporte para Markdown permitindo negrito, itálico, links e formatação.',
+                        'Mensagens diferentes para cada tipo de evento (entrada, saída, compra, ticket).',
+                        'Preview em tempo real mostrando como a mensagem ficará no Discord.'
+                    ]
+                },
+                'customization-buttons': {
+                    description: 'Personalize botões do bot com textos, emojis e cores customizadas para combinar com seu servidor.',
+                    features: [
+                        'Textos customizados para todos os botões do bot.',
+                        'Emojis personalizados do servidor ou emojis padrão do Discord.',
+                        'Cores configuráveis (azul, verde, vermelho, cinza) para cada botão.',
+                        'Ordem dos botões configurável para organizar interface como preferir.'
+                    ]
+                },
+                // INDICAÇÕES
+                'rendimentos-affiliate': {
+                    description: 'Sistema de afiliados que permite membros ganharem comissão indicando novos clientes para a loja.',
+                    features: [
+                        'Código de afiliado único para cada membro rastrear suas indicações.',
+                        'Comissão configurável por venda (porcentagem ou valor fixo).',
+                        'Dashboard mostrando total ganho, vendas geradas e saldo disponível.',
+                        'Saque de comissões via PIX ou uso como crédito na loja.'
+                    ]
+                },
+                'rendimentos-rewards': {
+                    description: 'Sistema de recompensas que premia afiliados que atingem metas de vendas ou indicações.',
+                    features: [
+                        'Metas configuráveis (10 vendas, R$ 1000 gerado) com recompensas específicas.',
+                        'Recompensas podem ser cargos exclusivos, produtos grátis ou bônus em dinheiro.',
+                        'Ranking de afiliados mostrando top performers do mês.',
+                        'Notificações automáticas quando afiliado atinge uma meta.'
+                    ]
+                },
+                'rendimentos-tracking': {
+                    description: 'Rastreamento detalhado de todas as vendas e comissões geradas por cada afiliado.',
+                    features: [
+                        'Relatórios detalhados mostrando cada venda, produto, valor e comissão.',
+                        'Gráficos de performance com evolução de vendas ao longo do tempo.',
+                        'Filtros por período (hoje, semana, mês, ano) para análise temporal.',
+                        'Exportação de relatórios em CSV ou PDF para análise externa.'
+                    ]
+                }
+            };
+            
+            if (descriptions[key]) {
+                return descriptions[key];
+            }
+            
+            // Default - nunca deve chegar aqui agora
+            return {
+                description: subOption.description,
+                features: subOption.features.map((feature, index) => {
+                    // Gera descrição genérica mas específica baseada no nome do recurso
+                    return `${feature}: funcionalidade que oferece controle avançado e personalização completa para seu servidor Discord.`;
+                })
+            };
+        }
+
+        function getFeatureDescription(feature) {
+            const descriptions = {
+                // Automações - AI Chat
+                'Conversação natural com IA': 'Utilize inteligência artificial avançada para conversas naturais e contextualizadas com os membros do servidor.',
+                'Respostas contextualizadas': 'O bot entende o contexto da conversa e fornece respostas relevantes baseadas no histórico.',
+                'Personalização de comportamento': 'Configure a personalidade, tom e estilo de resposta da IA conforme a identidade do seu servidor.',
+                'Histórico de conversas': 'Mantenha registro completo de todas as interações para análise e melhoria contínua.',
+                
+                // Automações - AI Moderator
+                'Detecção de toxicidade': 'Sistema de IA que identifica automaticamente mensagens tóxicas, ofensivas ou inapropriadas.',
+                'Filtro de conteúdo sensível': 'Bloqueio inteligente de conteúdo adulto, spam e links maliciosos.',
+                'Ações automáticas': 'Configure punições automáticas como avisos, mutes ou bans baseados em regras.',
+                'Logs detalhados': 'Registre todas as ações de moderação com timestamps e evidências completas.',
+                
+                // Proteção
+                'Detecção automática de raids': 'Algoritmo inteligente que identifica padrões de entrada suspeitos em tempo real.',
+                'Bloqueio de entradas em massa': 'Previne ataques de raid bloqueando múltiplas entradas simultâneas.',
+                'Sistema de verificação': 'Captcha e verificação por botão para validar novos membros.',
+                'Logs de tentativas': 'Registre todas as tentativas de raid para análise de segurança.',
+                
+                // Loja
+                'Produtos digitais': 'Venda keys, contas, acessos VIP e qualquer produto digital com entrega automática.',
+                'Entrega automática/manual': 'Escolha entre entrega instantânea ou aprovação manual para cada produto.',
+                'Gestão de estoque': 'Controle quantidade disponível com alertas automáticos quando acabar.',
+                'Categorias personalizadas': 'Organize produtos em categorias customizadas para melhor navegação.',
+                
+                // Tickets
+                'Múltiplas categorias': 'Crie categorias específicas como Suporte, Vendas, Parcerias, etc.',
+                'Equipes específicas': 'Atribua equipes diferentes para cada tipo de atendimento.',
+                'Permissões por cargo': 'Controle quem pode ver e responder tickets por cargo do Discord.',
+                'Mensagens customizadas': 'Personalize mensagens de abertura e fechamento de tickets.',
+                
+                // Default
+                'default': 'Recurso poderoso que melhora significativamente a experiência do seu servidor Discord.'
+            };
+            
+            return descriptions[feature] || descriptions['default'];
+        }
+
+        function switchTab(tabName, event) {
+            // Update tabs
+            document.querySelectorAll('.details-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            const tabContent = document.getElementById(`tab-${tabName}`);
+            if (tabContent) {
+                tabContent.style.display = 'block';
+            }
+        }
+
+        // Example Functions
+        function showExample(sectionId, subOptionId) {
+            const section = systemData[sectionId];
+            const subOption = section.subOptions.find(opt => opt.id === subOptionId);
+            
+            if (!subOption) return;
+            
+            const exampleData = getDiscordExample(sectionId, subOptionId, subOption);
+            
+            // Update modal
+            const modal = document.getElementById('exampleModal');
+            document.getElementById('exampleTitle').textContent = exampleData.title;
+            document.getElementById('exampleIcon').textContent = exampleData.icon;
+            document.getElementById('exampleDescription').textContent = exampleData.description;
+            document.getElementById('exampleDemo').innerHTML = exampleData.demo;
+            
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 100);
+        }
+
+        function getDiscordExample(sectionId, subOptionId, subOption) {
+            const examples = {
+                // AUTOMAÇÕES
+                'automation-ai_chat': {
+                    title: 'Ark-AI Chat',
+                    icon: '🤖',
+                    description: 'Conversa natural com IA no seu servidor Discord',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar user">👤</div>
+                                <div class="discord-content">
+                                    <div class="discord-username user">João Silva<span class="discord-timestamp">Hoje às 14:30</span></div>
+                                    <div class="discord-text">Oi bot, qual é o melhor jogo de 2024?</div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 14:30</span></div>
+                                    <div class="discord-text">Olá! 👋 Existem vários jogos incríveis em 2024! Alguns destaques incluem Elden Ring: Shadow of the Erdtree, Helldivers 2 e Palworld. Qual gênero você prefere? Posso dar recomendações mais específicas! 🎮</div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar user">👤</div>
+                                <div class="discord-content">
+                                    <div class="discord-username user">João Silva<span class="discord-timestamp">Hoje às 14:31</span></div>
+                                    <div class="discord-text">Gosto de RPG!</div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 14:31</span></div>
+                                    <div class="discord-text">Perfeito! Para RPG, recomendo fortemente Baldur's Gate 3 e Final Fantasy XVI. Ambos têm histórias envolventes e sistemas de combate incríveis. Quer saber mais sobre algum deles? ⚔️✨</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'automation-ai_moderator': {
+                    title: 'Ark-AI Moderator',
+                    icon: '🛡️',
+                    description: 'IA detecta e modera conteúdo tóxico automaticamente',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar user">😠</div>
+                                <div class="discord-content">
+                                    <div class="discord-username user" style="color: #ed4245;">UsuárioTóxico<span class="discord-timestamp">Hoje às 15:20</span></div>
+                                    <div class="discord-text" style="text-decoration: line-through; opacity: 0.5;">[Mensagem removida por conteúdo inapropriado]</div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 15:20</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #ed4245;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">⚠️ Moderação Automática</div>
+                                            <div class="discord-embed-description">
+                                                <strong>Usuário:</strong> UsuárioTóxico<br>
+                                                <strong>Ação:</strong> Mensagem removida<br>
+                                                <strong>Motivo:</strong> Conteúdo tóxico detectado pela IA<br>
+                                                <strong>Punição:</strong> Aviso (1/3)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'automation-welcome': {
+                    title: 'Boas-Vindas',
+                    icon: '👋',
+                    description: 'Mensagem de boas-vindas personalizada para novos membros',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 16:45</span></div>
+                                    <div class="discord-text" style="margin-bottom: 0.5rem;">👋 Bem-vindo(a) ao servidor, <strong>@NovoMembro</strong>!</div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #5865f2;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🎉 Seja muito bem-vindo(a)!</div>
+                                            <div class="discord-embed-description">
+                                                Você é o membro <strong>#248</strong> do <strong>Arkodex Community</strong>!<br><br>
+                                                📋 Leia as regras em <strong>#regras</strong><br>
+                                                💬 Se apresente em <strong>#apresentações</strong><br>
+                                                🎮 Divirta-se em <strong>#geral</strong><br>
+                                                🎁 Confira os benefícios em <strong>#vip</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #5865f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🏠</div>
+                                        <span>Arkodex Community • Hoje às 16:45</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">✅ Li as Regras</button>
+                                        <button class="discord-button secondary">📝 Me Apresentar</button>
+                                        <button class="discord-button secondary">🎁 Ver VIP</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'automation-invite_tracker': {
+                    title: 'Invite Tracker',
+                    icon: '🔗',
+                    description: 'Rastreamento de convites e sistema de recompensas',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar user">👤</div>
+                                <div class="discord-content">
+                                    <div class="discord-username user">Recrutador<span class="discord-timestamp">Hoje às 17:00</span></div>
+                                    <div class="discord-text">/invites</div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 17:00</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #3b82f6;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">📊 Suas Estatísticas de Convites</div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">👥 Total de Convites</div>
+                                                <div class="discord-embed-field-value">47 membros convidados</div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">✅ Membros Ativos</div>
+                                                <div class="discord-embed-field-value">42 ainda no servidor</div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">❌ Membros que Saíram</div>
+                                                <div class="discord-embed-field-value">5 saíram</div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🏆 Ranking</div>
+                                                <div class="discord-embed-field-value">#2 no servidor</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">📊</div>
+                                        <span>Arkodex Community • Hoje às 17:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'automation-reactions': {
+                    title: 'Reações Automáticas',
+                    icon: '😊',
+                    description: 'Adiciona reações automáticas em mensagens específicas',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar user">👤</div>
+                                <div class="discord-content">
+                                    <div class="discord-username user">Gamer123<span class="discord-timestamp">Hoje às 18:15</span></div>
+                                    <div class="discord-text">Acabei de fazer um ACE no Valorant! 🎮</div>
+                                    <div class="discord-reactions">
+                                        <div class="discord-reaction">🎮 <span class="discord-reaction-count">3</span></div>
+                                        <div class="discord-reaction">🔥 <span class="discord-reaction-count">5</span></div>
+                                        <div class="discord-reaction">👏 <span class="discord-reaction-count">2</span></div>
+                                        <div class="discord-reaction">⚡ <span class="discord-reaction-count">1</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 18:15</span></div>
+                                    <div class="discord-text">Reações automáticas adicionadas! ✨</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                // PROTEÇÃO
+                'protection-antiraid': {
+                    title: 'Anti-Raid',
+                    icon: '🛡️',
+                    description: 'Proteção automática contra ataques de raid',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 19:30</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #ed4245;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🚨 RAID DETECTADO!</div>
+                                            <div class="discord-embed-description">
+                                                <strong>Status:</strong> Bloqueado ✅<br>
+                                                <strong>Tentativas:</strong> 23 contas em 10 segundos<br>
+                                                <strong>Ação:</strong> Servidor em lockdown<br>
+                                                <strong>Bloqueados:</strong> 23 usuários<br><br>
+                                                O servidor está protegido! 🛡️
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #ed4245; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🛡️</div>
+                                        <span>Arkodex Community • Hoje às 19:30</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button danger">🔒 Manter Lockdown</button>
+                                        <button class="discord-button success">🔓 Liberar Servidor</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'protection-antispam': {
+                    title: 'Anti-Spam',
+                    icon: '🚫',
+                    description: 'Detecta e pune spam automaticamente',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar user" style="background: #ed4245;">😠</div>
+                                <div class="discord-content">
+                                    <div class="discord-username user" style="color: #ed4245;">Spammer<span class="discord-timestamp">Hoje às 20:00</span></div>
+                                    <div class="discord-text" style="opacity: 0.5;">[5 mensagens removidas por spam]</div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 20:00</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #f59e0b;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🚫 Anti-Spam Ativado</div>
+                                            <div class="discord-embed-description">
+                                                <strong>Usuário:</strong> @Spammer<br>
+                                                <strong>Infração:</strong> 5 mensagens em 2 segundos<br>
+                                                <strong>Ação:</strong> Timeout de 10 minutos<br>
+                                                <strong>Mensagens removidas:</strong> 5
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">⚠️</div>
+                                        <span>Arkodex Community • Hoje às 20:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                // LOJA
+                'store-products': {
+                    title: 'Gestão de Produtos',
+                    icon: '📦',
+                    description: 'Sistema completo de produtos digitais',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 14:30</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #5865f2;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">💎 VIP Premium - Acesso Exclusivo</div>
+                                            <div class="discord-embed-description">
+                                                Tenha acesso a todos os recursos premium do servidor, incluindo canais exclusivos, comandos especiais e suporte prioritário.
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">💰 Preço</div>
+                                                <div class="discord-embed-field-value"><code>R$ 29,90</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">📦 Opções</div>
+                                                <div class="discord-embed-field-value"><code>3 disponíveis</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">💵 Vendas</div>
+                                                <div class="discord-embed-field-value"><code>47 vendas realizadas</code></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #5865f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🏪</div>
+                                        <span>Arkodex Community • Hoje às 14:30</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">🛒 Comprar</button>
+                                        <button class="discord-button secondary">❓ Dúvidas</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'store-marketplace': {
+                    title: 'Marketplace',
+                    icon: '🏪',
+                    description: 'Marketplace público com categorias',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 21:30</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #3b82f6;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🏪 Ark Marketplace</div>
+                                            <div class="discord-embed-description">
+                                                Selecione uma categoria para ver os produtos disponíveis no marketplace público.
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">📦 Produtos Públicos</div>
+                                                <div class="discord-embed-field-value"><code>25 anúncios ativos</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🛒 Carrinhos em Aberto</div>
+                                                <div class="discord-embed-field-value"><code>3 carrinhos</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🔎 Última Atualização</div>
+                                                <div class="discord-embed-field-value"><code>Hoje às 21:29</code></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🏪</div>
+                                        <span>Arkodex Community • Hoje às 21:30</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">🎮 Games (12)</button>
+                                        <button class="discord-button">💎 VIP (5)</button>
+                                        <button class="discord-button">🔑 Keys (8)</button>
+                                        <button class="discord-button secondary">🛒 Meu Carrinho</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'store-payments': {
+                    title: 'Sistema de Pagamentos',
+                    icon: '💳',
+                    description: 'Pagamentos via PIX e cartão com aprovação automática',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar user">👤</div>
+                                <div class="discord-content">
+                                    <div class="discord-username user">Cliente<span class="discord-timestamp">Hoje às 21:58</span></div>
+                                    <div class="discord-text">Finalizei a compra do VIP Premium.</div>
+                                </div>
+                            </div>
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 22:00</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #10b981;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">💳 Pagamento Aprovado!</div>
+                                            <div class="discord-embed-description">
+                                                <strong>Produto:</strong> VIP Premium<br>
+                                                <strong>Valor:</strong> R$ 29,90<br>
+                                                <strong>Método:</strong> PIX<br>
+                                                <strong>Status:</strong> ✅ Aprovado<br>
+                                                <strong>ID da Compra:</strong> #PAG-2048<br><br>
+                                                Seu produto foi entregue via DM! 📨
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">📦 Entrega</div>
+                                                <div class="discord-embed-field-value"><code>Automática após confirmação</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🧾 Comprovante</div>
+                                                <div class="discord-embed-field-value"><code>Registrado nos logs da loja</code></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">💳</div>
+                                        <span>Arkodex Community • Hoje às 22:00</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">📨 Abrir DM</button>
+                                        <button class="discord-button secondary">🧾 Ver Recibo</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                // TICKETS
+                'tickets-categories': {
+                    title: 'Categorias de Tickets',
+                    icon: '🎫',
+                    description: 'Múltiplas categorias de atendimento',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 23:00</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #3b82f6;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🎫 Sistema de Tickets</div>
+                                            <div class="discord-embed-description">
+                                                Selecione o tipo de atendimento que você precisa para abrir um ticket com a equipe.
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">📂 Painel</div>
+                                                <div class="discord-embed-field-value"><code>Atendimento Principal</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">👥 Equipe Responsável</div>
+                                                <div class="discord-embed-field-value"><code>Moderadores e Suporte</code></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🎫</div>
+                                        <span>Arkodex Community • Hoje às 23:00</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">💬 Suporte Geral</button>
+                                        <button class="discord-button">🛒 Dúvidas de Compra</button>
+                                        <button class="discord-button">🤝 Parcerias</button>
+                                        <button class="discord-button danger">⚠️ Denúncia</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'tickets-transcripts': {
+                    title: 'Transcrições Automáticas',
+                    icon: '📄',
+                    description: 'Salva histórico completo de tickets',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 23:30</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #10b981;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">📄 Transcript do Ticket</div>
+                                            <div class="discord-embed-description">
+                                                <a href="#">Clique aqui para visualizar o transcript</a>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">⏰ Expiração</div>
+                                                <div class="discord-embed-field-value">Este transcript expirará automaticamente em <strong>3 dias</strong></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">📄</div>
+                                        <span>Transcript hospedado com segurança</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">🔗 Ver transcript</button>
+                                        <button class="discord-button secondary">⭐ Avaliar Atendimento</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                // SORTEIOS
+                'giveaways-create': {
+                    title: 'Criar Sorteio',
+                    icon: '🎁',
+                    description: 'Sistema completo de sorteios',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 00:00</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #f59e0b;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🎁 Editar Sorteio</div>
+                                            <div class="discord-embed-description">
+                                                Selecione um sorteio abaixo para editar suas configurações.
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🎉 Sorteio</div>
+                                                <div class="discord-embed-field-value"><code>Nitro 1 Mês</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">📢 Canal de Logs</div>
+                                                <div class="discord-embed-field-value"><code>#logs-sorteio</code></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button success">🔄 Gerenciar Tarefas</button>
+                                        <button class="discord-button secondary">⚙️ Gerenciar Preferências</button>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button secondary">🧾 Definir Logs</button>
+                                        <button class="discord-button">💬 Definir Mensagem</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                // CLOUD
+                'cloud-panel': {
+                    title: 'Painel Web',
+                    icon: '🌐',
+                    description: 'Gerencie seu bot via painel web',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 01:00</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #3b82f6;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🌐 Arkodex Cloud - Painel Web</div>
+                                            <div class="discord-embed-description">
+                                                Acesse o painel web para gerenciar seu bot remotamente:<br><br>
+                                                ✅ Configurações em tempo real<br>
+                                                ✅ Dashboard com estatísticas<br>
+                                                ✅ Gerenciar produtos e tickets<br>
+                                                ✅ Ver logs e relatórios<br>
+                                                ✅ Backup e restauração<br><br>
+                                                <strong>Link:</strong> https://cloud.arkodex.com
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🔐 Sessão</div>
+                                                <div class="discord-embed-field-value"><code>Autenticada com Discord</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">📡 Status da API</div>
+                                                <div class="discord-embed-field-value"><code>Operacional</code></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">☁️</div>
+                                        <span>Arkodex Cloud • Sincronização em tempo real</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">🌐 Acessar Painel</button>
+                                        <button class="discord-button secondary">📊 Ver Estatísticas</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                // PERSONALIZAÇÃO
+                'customization-colors': {
+                    title: 'Cores Personalizadas',
+                    icon: '🎨',
+                    description: 'Personalize as cores dos embeds do bot',
+                    demo: `
+                        <div class="discord-chat">
+                            <div class="discord-message">
+                                <div class="discord-avatar bot">🤖</div>
+                                <div class="discord-content">
+                                    <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Hoje às 02:00</span></div>
+                                    <div class="discord-embed">
+                                        <div class="discord-embed-color" style="background: #8b5cf6;"></div>
+                                        <div class="discord-embed-content">
+                                            <div class="discord-embed-title">🎨 Personalização de Cores</div>
+                                            <div class="discord-embed-description">
+                                                Configure a cor principal usada nos embeds e interfaces do bot.
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🎯 Cor Atual</div>
+                                                <div class="discord-embed-field-value"><code>#8B5CF6</code></div>
+                                            </div>
+                                            <div class="discord-embed-field">
+                                                <div class="discord-embed-field-name">🧪 Prévia</div>
+                                                <div class="discord-embed-field-value"><code>Aplicada em tickets, loja e automações</code></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(47, 49, 54, 0.3); border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #b9bbbe;">
+                                        <div style="width: 20px; height: 20px; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🎨</div>
+                                        <span>Cores sincronizadas com os painéis do bot</span>
+                                    </div>
+                                    <div class="discord-buttons">
+                                        <button class="discord-button">🔵 Azul</button>
+                                        <button class="discord-button success">🟢 Verde</button>
+                                        <button class="discord-button" style="background: #8b5cf6;">🟣 Roxo</button>
+                                        <button class="discord-button secondary">⚙️ Personalizar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+            };
+            
+            const key = `${sectionId}-${subOptionId}`;
+            
+            if (examples[key]) {
+                return examples[key];
+            }
+            
+            // Default example
+            return {
+                title: subOption.title,
+                icon: '🎯',
+                description: `Exemplo de como ${subOption.title} funciona no Discord`,
+                demo: `
+                    <div class="discord-chat">
+                        <div class="discord-message">
+                            <div class="discord-avatar bot">🤖</div>
+                            <div class="discord-content">
+                                <div class="discord-username bot">Arkodex Pro<span class="discord-bot-tag">BOT</span><span class="discord-timestamp">Agora</span></div>
+                                <div class="discord-embed">
+                                    <div class="discord-embed-color" style="background: #3b82f6;"></div>
+                                    <div class="discord-embed-content">
+                                        <div class="discord-embed-title">${subOption.title}</div>
+                                        <div class="discord-embed-description">${subOption.description}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            };
+        }
+
+        function closeExample() {
+            const modal = document.getElementById('exampleModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function executeExample() {
+            // Execute the example action
+            alert('Exemplo executado com sucesso!');
+        }
+
+        // Simulation Functions
+        function simulateDiscordReactions() {
+            alert('Simulação de reações automáticas do Discord!');
+        }
+
+        function defaultSimulation() {
+            alert('Simulação padrão executada!');
+        }
+
+        // Utility Functions
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebarOpen = !sidebarOpen;
+            
+            if (sidebarOpen) {
+                sidebar.classList.remove('open');
+                mainContent.classList.remove('sidebar-closed');
+            } else {
+                sidebar.classList.add('open');
+                mainContent.classList.add('sidebar-closed');
+            }
+        }
+
+        // Mobile Menu Functions
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            const menuToggle = document.getElementById('mobileMenuToggle');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            
+            // Change icon
+            const icon = menuToggle.querySelector('i');
+            if (sidebar.classList.contains('open')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            const menuToggle = document.getElementById('mobileMenuToggle');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            
+            // Reset icon
+            const icon = menuToggle.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial section
+            const firstSection = document.querySelector('.sidebar-item');
+            const sidebar = document.getElementById('sidebar');
+            if (firstSection) {
+                const sectionId = firstSection.getAttribute('data-section');
+                navigateToSection(sectionId);
+            }
+
+            if (sidebar) {
+                sidebar.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                sidebar.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+            }
+            
+            // Add event listeners
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-section');
+                    navigateToSection(sectionId);
+                    
+                    // Close mobile menu on navigation
+                    if (window.innerWidth <= 768) {
+                        closeMobileMenu();
+                    }
+                });
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('exampleModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeExample();
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey) {
+                    switch(e.key) {
+                        case '1':
+                            e.preventDefault();
+                            navigateToSection('automation');
+                            break;
+                        case '2':
+                            e.preventDefault();
+                            navigateToSection('protection');
+                            break;
+                        case '3':
+                            e.preventDefault();
+                            navigateToSection('store');
+                            break;
+                        case '4':
+                            e.preventDefault();
+                            navigateToSection('tickets');
+                            break;
+                        case '5':
+                            e.preventDefault();
+                            navigateToSection('giveaways');
+                            break;
+                        case '6':
+                            e.preventDefault();
+                            navigateToSection('rendimentos');
+                            break;
+                        case '7':
+                            e.preventDefault();
+                            navigateToSection('cloud');
+                            break;
+                        case '8':
+                            e.preventDefault();
+                            navigateToSection('customization');
+                            break;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
